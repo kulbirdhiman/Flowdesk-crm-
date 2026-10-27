@@ -27,6 +27,29 @@ npm install
 npm run dev
 ```
 
-## Moving back to Supabase
+## NestJS API (initial backend)
 
-`supabase/recreate_database.sql` has the full schema. To use a real database again, create the client in `lib/supabaseClient.ts` with `createClient(url, anonKey)` from `@supabase/supabase-js` (and add that package back). Every page imports `supabase` from that one file.
+The `backend/` directory contains the first NestJS API, using your Supabase project's PostgreSQL database directly. It currently provides health checks, JWT login/current-user endpoints, and role-scoped lead endpoints. The Next.js app is **not connected to this API yet**; it continues to use the browser-only demo database until frontend integration is done.
+
+1. Apply `backend/database/migrations/001_create_crm_users.sql` to the existing Supabase database. This is additive and creates the API authentication table; it does not seed demo data.
+2. In `backend/`, copy `.env.example` to `.env` and set `DATABASE_URL`, `JWT_SECRET` (at least 32 random characters), and `FRONTEND_ORIGIN`. Use the PostgreSQL connection string from Supabase, not the anon or service-role key.
+3. Install and start the API:
+
+   ```bash
+   cd backend
+   npm install
+   npm run start:dev
+   ```
+
+4. Create real API users after applying the migration. Associate each with its existing `"Employee Directory"` UUID when applicable:
+
+   ```bash
+   npm run build
+   npm run user:create -- person@company.com employee <employee-uuid>
+   ```
+
+   Use `admin` or `hr` instead of `employee` for those roles. Never use the demo passwords for real accounts.
+
+The API listens on port 4000 by default. Routes are prefixed with `/api/v1`; check `GET /api/v1/health`, use `POST /api/v1/auth/login`, then send the returned bearer token to `/api/v1/auth/me` and `/api/v1/leads`.
+
+**Production caution:** do not run `supabase/recreate_database.sql` against a live database; it drops tables and includes public-access policies. Before production, review and remove any permissive public Supabase/PostgREST policies, secure database credentials, and complete the remaining CRM modules and frontend integration.
