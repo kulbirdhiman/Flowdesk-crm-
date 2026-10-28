@@ -44,7 +44,7 @@ const fetchLeadsBySource = async (): Promise<LeadsBySourceData> => {
 
   // Count leads by source
   const sourceCounts: { [key: string]: number } = {};
-  data?.forEach((lead) => {
+  data?.forEach((lead: any) => {
     const source = lead.source?.toUpperCase() || 'OTHERS';
     sourceCounts[source] = (sourceCounts[source] || 0) + 1;
   });
@@ -97,8 +97,8 @@ export function LeadsBySourceChart() {
       .sort((a, b) => b.count - a.count); // Sort by count descending
   }, [sourceData]);
 
-  const totalLeads = useMemo(() => 
-    chartData.reduce((sum, item) => sum + item.count, 0), 
+  const totalLeads = useMemo(() =>
+    chartData.reduce((sum, item) => sum + item.count, 0),
     [chartData]
   );
 
@@ -223,7 +223,7 @@ export function LeadsBySourceChart() {
               </Pie>
             </PieChart>
           </ChartContainer>
-          
+
           {/* Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="text-3xl font-bold text-foreground">{totalLeads}</div>
