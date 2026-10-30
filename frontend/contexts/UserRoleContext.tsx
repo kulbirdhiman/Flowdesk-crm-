@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { isDemoMode } from '@/lib/apiClient';
 import { useAuth } from '@/contexts/AuthContext';
 
 type UserRole = 'admin' | 'employee' | 'hr';
@@ -29,7 +30,7 @@ export function UserRoleProvider({ children }: { children: React.ReactNode }) {
           .find(row => row.startsWith('demo_user_role='))
           ?.split('=')[1];
         
-        if (demoRole) {
+        if (isDemoMode && demoRole) {
           setUserRole(demoRole as UserRole);
         } else if (user) {
           // Fallback to real authenticated user's role

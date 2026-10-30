@@ -1,9 +1,5 @@
-// The app now runs on a local, in-browser database instead of Supabase, so it
-// keeps working without a hosted backend. `localDb` implements the parts of the
-// Supabase client the app uses, so every existing import keeps working.
-//
-// To go back to Supabase later, create the client here again with
-// `createClient(url, anonKey)` from "@supabase/supabase-js".
-import { localDb } from "./localDb";
-
-export const supabase = localDb;
+import { localDb } from './localDb';
+import { apiClient, isDemoMode } from './apiClient';
+// The legacy name keeps all existing screens connected through one adapter.
+// Demo data is available only when explicitly enabled at build time.
+export const supabase: typeof localDb = (isDemoMode ? localDb : apiClient) as typeof localDb;

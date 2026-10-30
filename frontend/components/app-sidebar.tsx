@@ -32,6 +32,7 @@ const data = {
     avatar: "/avatars/default-avatar.svg",
   },
   navMain: [
+    { title: "Login Accounts", url: "/dashboard/accounts", icon: IconSettings },
     {
       title: "Dashboard",
       url: "/dashboard",

@@ -1,5 +1,7 @@
 "use client";
 
+import { isDemoMode } from '@/lib/apiClient';
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -170,7 +172,7 @@ export default function EmployeeAttendancePage() {
       const today = new Date().toISOString().split('T')[0];
       console.log('Loading today\'s attendance for employee:', employeeInfo.id, 'date:', today);
       
-      const localAttendance = localStorage.getItem('offline-attendance');
+      const localAttendance = isDemoMode ? localStorage.getItem('offline-attendance') : null;
       if (localAttendance) {
         try {
           const parsedAttendance = JSON.parse(localAttendance);
@@ -230,7 +232,7 @@ export default function EmployeeAttendancePage() {
     try {
       console.log('Loading attendance history for employee:', employeeInfo.id);
       
-      const localAttendance = localStorage.getItem('offline-attendance');
+      const localAttendance = isDemoMode ? localStorage.getItem('offline-attendance') : null;
       if (localAttendance) {
         try {
           const parsedAttendance = JSON.parse(localAttendance);
@@ -316,8 +318,9 @@ export default function EmployeeAttendancePage() {
           .select();
 
         if (error) {
+          if (!isDemoMode) throw new Error(error.message);
           console.error('Database sync error:', error);
-          localStorage.setItem('offline-attendance', JSON.stringify(attendanceData));
+          if (isDemoMode) localStorage.setItem('offline-attendance', JSON.stringify(attendanceData));
           toast.error(`Check-in saved locally. Database sync failed: ${error.message}`);
           return;
         }
@@ -329,14 +332,15 @@ export default function EmployeeAttendancePage() {
           whalesync_postgres_id: data[0]?.whalesync_postgres_id
         };
 
-        localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendanceData));
+        if (isDemoMode) localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendanceData));
         setAttendance(updatedAttendanceData);
         toast.success(`Check-in successful! Status: ${status} (Synced to database)`);
-        console.log('Database sync successful - real-time update sent to admin');
+        console.log('Attendance saved to the server');
         
       } catch (dbError) {
+        if (!isDemoMode) throw dbError;
         console.error('Database sync error:', dbError);
-        localStorage.setItem('offline-attendance', JSON.stringify(attendanceData));
+        if (isDemoMode) localStorage.setItem('offline-attendance', JSON.stringify(attendanceData));
         setAttendance(attendanceData);
         toast.error(`Check-in saved locally. Database sync failed: ${dbError.message}`);
       }
@@ -417,6 +421,7 @@ export default function EmployeeAttendancePage() {
         }
 
         if (error) {
+          if (!isDemoMode) throw new Error(error.message);
           console.error('Database sync error:', error);
           const updatedAttendance = {
             ...attendance,
@@ -424,7 +429,7 @@ export default function EmployeeAttendancePage() {
             working_hours: Math.round(workingHours * 100) / 100,
             status: finalStatus
           };
-          localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendance));
+          if (isDemoMode) localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendance));
           setAttendance(updatedAttendance);
           toast.error(`Check-out saved locally. Database sync failed: ${error.message}`);
           return;
@@ -439,12 +444,13 @@ export default function EmployeeAttendancePage() {
           status: finalStatus
         };
         
-        localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendance));
+        if (isDemoMode) localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendance));
         setAttendance(updatedAttendance);
         toast.success(`Check-out successful! Working hours: ${Math.round(workingHours * 100) / 100}h (Synced to database)`);
-        console.log('Database sync successful - real-time update sent to admin');
+        console.log('Attendance saved to the server');
         
       } catch (dbError) {
+        if (!isDemoMode) throw dbError;
         console.error('Database sync error:', dbError);
         const updatedAttendance = {
           ...attendance,
@@ -452,7 +458,7 @@ export default function EmployeeAttendancePage() {
           working_hours: Math.round(workingHours * 100) / 100,
           status: finalStatus
         };
-        localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendance));
+        if (isDemoMode) localStorage.setItem('offline-attendance', JSON.stringify(updatedAttendance));
         setAttendance(updatedAttendance);
         toast.error(`Check-out saved locally. Database sync failed: ${dbError.message}`);
       }

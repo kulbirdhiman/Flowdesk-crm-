@@ -1,5 +1,7 @@
 "use client";
 
+import { resolveFileUrl } from '@/lib/apiClient';
+
 import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -472,9 +474,13 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleViewDocument = (document: Document) => {
+  const handleViewDocument = async (document: Document) => {
     // Keep action button behavior (open file)
-    window.open(document.file_url, '_blank');
+    const popup = window.open('', '_blank');
+    try {
+      const url = await resolveFileUrl(document.file_url);
+      if (popup) { popup.opener = null; popup.location.href = url; }
+    } catch (error) { popup?.close(); toast.error(error instanceof Error ? error.message : 'Unable to open file'); }
   };
 
   const handleRowClick = (document: Document) => {
