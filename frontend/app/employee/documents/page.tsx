@@ -1,5 +1,7 @@
 "use client";
 
+import { resolveFileUrl } from '@/lib/apiClient';
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -223,7 +225,7 @@ export default function EmployeeDocumentsPage() {
         return;
       }
 
-      const response = await fetch(doc.file_url);
+      const response = await fetch(await resolveFileUrl(doc.file_url));
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

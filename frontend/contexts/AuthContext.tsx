@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
+import { isDemoMode } from '@/lib/apiClient';
 import { clearAppStorage } from "@/lib/localDb";
 
 interface User {
@@ -41,13 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return null;
     }
 
-    let role: 'admin' | 'hr' | 'employee' = 'employee';
-    const title = employeeData.job_title?.toLowerCase() || '';
-    if (title.includes('hr')) {
-      role = 'hr';
-    } else if (title.includes('admin') || title.includes('ceo') || title.includes('manager')) {
-      role = 'admin';
-    }
+    // Roles come from the authenticated backend, never from editable job titles.
+    const title = String(employeeData.job_title || '').toLowerCase();
+    const role = (isDemoMode ? (title.includes('hr') ? 'hr' : /admin|ceo|manager/.test(title) ? 'admin' : 'employee') : (authUser as any).app_metadata?.role || 'employee') as 'admin' | 'hr' | 'employee';
 
     return {
       id: authUser.id,

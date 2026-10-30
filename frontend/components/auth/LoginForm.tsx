@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 import { Loader2, Eye, EyeOff, Building2, ShieldCheck, UserRound, Users, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '@/lib/seedData';
+import { isDemoMode } from '@/lib/apiClient';
 import { resetLocalDb } from '@/lib/localDb';
 
 const ROLE_ICONS = { admin: ShieldCheck, employee: UserRound, hr: Users };
@@ -181,8 +183,10 @@ export function LoginForm() {
             )}
           </Button>
 
+          {!isDemoMode && <Link href="/forgot-password" className="block text-center text-sm underline">Forgot password?</Link>}
+
           {/* Demo profiles: which email opens which role */}
-          <div className="mt-4 space-y-3 rounded-md border bg-muted/40 p-3">
+          {isDemoMode && <div className="mt-4 space-y-3 rounded-md border bg-muted/40 p-3">
             <div className="text-center">
               <p className="text-sm font-semibold">Demo accounts</p>
               <p className="text-xs text-muted-foreground">
@@ -226,7 +230,7 @@ export function LoginForm() {
             >
               <RotateCcw className="h-3 w-3" /> Reset demo data
             </button>
-          </div>
+          </div>}
         </form>
       </CardContent>
     </Card>
