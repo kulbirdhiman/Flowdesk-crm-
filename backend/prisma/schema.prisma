@@ -25,6 +25,7 @@ model User {
   role      Role       @default(EMPLOYEE)
   status    UserStatus @default(ACTIVE)
 
+  files CrmFile[]
   refreshTokens RefreshToken[]
   passwordResetTokens PasswordResetToken[]
 
@@ -53,4 +54,25 @@ model PasswordResetToken {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// Legacy frontend field names are preserved in data during the API migration.
+model CrmRecord {
+  resource String
+  id       String
+  data     Json
+  @@id([resource, id])
+}
+
+model CrmFile {
+  id        String @id @default(uuid())
+  ownerId   String
+  owner     User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  bucket    String
+  path      String
+  mimeType  String
+  content   Bytes
+  createdAt DateTime @default(now())
+  @@unique([bucket, path])
+  @@index([ownerId])
 }

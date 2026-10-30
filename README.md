@@ -28,7 +28,7 @@ docker compose logs migrate
 
 ## Prisma workflow
 
-The PostgreSQL schema is in `backend/prisma/schema.prisma`. The initial migration creates a starter `User` table; it does not implement authentication or migrate the frontend's existing browser/local data. Inject `PrismaService` into NestJS services to implement database-backed APIs.
+The PostgreSQL schema is in `backend/prisma/schema.prisma`. Migrations create authentication tables and persistent CRM records/files. Browser demo data is not automatically migrated. Inject `PrismaService` into NestJS services to implement database-backed APIs.
 
 After editing the schema, create and apply a development migration using the running local database:
 
@@ -74,7 +74,7 @@ Passwords require at least 12 characters and at most 72 UTF-8 bytes. Registratio
 
 Login and refresh return `{ accessToken, user }`; keep the access token in frontend memory. Send `credentials: 'include'` on browser login/refresh/logout requests so the browser handles the refresh cookie. For protected routes, use `JwtAuthGuard`; add role checks when implementing privileged business endpoints. Public registration never grants elevated roles.
 
-Local password-reset emails are captured by Mailpit at http://localhost:8025 (SMTP port 1025). Real delivery requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM` configured for your email provider. Reset emails link to `${FRONTEND_URL}/reset-password?token=...`; the frontend reset form and existing login/AuthContext integration remain to be implemented. The backend reset API can be tested directly with the emailed token. Tokens are not returned by the forgot-password endpoint or logged.
+Local password-reset emails are captured by Mailpit at http://localhost:8025 (SMTP port 1025). Real delivery requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM` configured for your email provider. Reset emails link to `${FRONTEND_URL}/reset-password?token=...`; the frontend login/AuthContext and password recovery forms are connected to these endpoints. The backend reset API can be tested directly with the emailed token. Tokens are not returned by the forgot-password endpoint or logged.
 
 Auth events are written to the Nest logger without passwords or tokens. This project does not have the example's property/tenant model or a persistent audit-log service.
 
@@ -90,4 +90,8 @@ It covers registration, duplicate emails, rejected role injection, login, refres
 
 `UsersModule` exports `UsersService`. Import `UsersModule` in a consuming module's `imports`, then inject `constructor(private readonly usersService: UsersService) {}` into its service. `AuthModule` already does this for registration.
 
-Available service methods are `create({ name, email, password })`, `findById(id)`, `update(id, { name?, email? })`, and `delete(id)`. Create hashes the password; results exclude it. Unknown users produce 404 and duplicate emails produce 409. Deleting a user also deletes their refresh/reset tokens through database foreign keys. Use the auth password-change method for password updates. These are injectable service methods; user CRUD HTTP routes have not been exposed.
+Available service methods are `create({ name, email, password })`, `findById(id)`, `update(id, { name?, email? })`, and `delete(id)`. Create hashes the password; results exclude it. Unknown users produce 404 and duplicate emails produce 409. Deleting a user also deletes their refresh/reset tokens through database foreign keys. Use the auth password-change method for password updates. These are injectable service methods; administrator account routes are exposed under `/crm/accounts` (see the CRM API guide).
+
+## Connected CRM APIs
+
+The frontend uses the NestJS backend by default. See [CRM_API.md](backend/CRM_API.md) for the service/API map, account provisioning, access rules, frontend configuration, integration tests and current limits. Create the first administrator with `npm run admin:create`, then manage employee login accounts at `/dashboard/accounts`.

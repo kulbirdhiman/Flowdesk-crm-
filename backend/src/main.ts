@@ -1,4 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
+import { json } from 'express';
 import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { AppModule, ObserveInstrument } from './app.module.js';
@@ -6,7 +7,9 @@ import { AppModule, ObserveInstrument } from './app.module.js';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     instrument: ObserveInstrument,
+    bodyParser: false,
   });
+  app.use(json({ limit: '15mb' }));
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
